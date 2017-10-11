@@ -10,38 +10,55 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>	POKER </title>
-	<script type="text/javascript" src="js/jquery-2.1.4.js"></script>
+	<link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="css/custom.css">
+
+	<script type="text/javascript" src="js/jquery-2.1.4.js"></script>	
+	<script type="text/javascript" src="js/bootstrap/bootstrap.min.js"></script>
 </head>
 <body>
-	<div id="container">
-		<div id="header">
+	<div class="container">
+		<div class="header">
 			<h1>Poker Compara Online</h1>
 		</div>
-		<div id="content">
+		<div class="content">
 			<p>
-				<input type="button" id="barajar" value="Barajar">
+				<input type="button" class="btn btn-lg" id="barajar" value="Barajar">
 			</p>
 			<p>
-				<input type="button" id="repartir" value="Repartir">
+				<input type="button" class="btn btn-lg" id="repartir" value="Repartir">
 			</p>
 
 			<input type="hidden" name="token" id="token">
 
-
-			<!--<h2>Mesa</h2>
-			<table>
+			<!--<table id="player1" class="table">
+				<thead>
+					<tr>
+						<th>Jugador 1</th>
+					</tr>
+				</thead>
 				<tbody>
 					<tr>
-						<td>Carta 1</td>
-						<td>Carta 2</td>
-						<td>Carta 3</td>
-						<td>Carta 4</td>
-						<td>Carta 5</td>
+						<td></td>
+						<td></td>
+					</tr>
+				</tbody>
+			</table>
+
+			<table id="player2" class="table">
+				<thead>
+					<tr>
+						<th>Jugador 2</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td></td>
 					</tr>
 				</tbody>
 			</table>-->
 
-			<table>
+			<table id="players" class="table">
 				<thead>
 					<tr>
 						<th>Jugador 1</th>
@@ -50,24 +67,22 @@
 				</thead>
 				<tbody>
 					<tr>
-						<td>Cel 1,1</td>
-						<td>Cel 1,2</td>
-					</tr>
-					<tr>
-						<td>Cel 2,1</td>
-						<td>Cel 2,2</td>
-					</tr>
-					<tr>
-						<td>Cel 3,1</td>
-						<td>Cel 3,2</td>
-					</tr>
-					<tr>
-						<td>Cel 4,1</td>
-						<td>Cel 4,2</td>
-					</tr>
-					<tr>
-						<td>Cel 5,1</td>
-						<td>Cel 5,2</td>
+						<td>
+							<table id="player1">
+								<tr>
+									<td></td>
+									<td></td>
+								</tr>
+							</table>
+						</td>
+						<td>
+							<table id="player2" >
+								<tr>
+									<td></td>
+									<td></td>
+								</tr>
+							</table>
+						</td>
 					</tr>
 				</tbody>
 			</table>
@@ -75,19 +90,25 @@
 
 			
 		</div>
-		<div id="footer">
+		
+	</div>
+	<div class="footer">
+		<div class="container">
 			Copyright 2017 Sheryl Ravelo
 		</div>
 	</div>
 	
 <script type="text/javascript">
-	$(function() {
+	var textHand = "";
+	var fullOnePair = "";
+	var fullThreeOfAKind = "";
+	$(function() {	
+
 	    $('#barajar').click(function() {
 	    	getDeck(function(token) {
 		        // set token en hidden
 		        $("#token").val(token);
-		        console.log(token);
-		        
+		        console.log(token);		        
 		    });
 	        return false;
 	    });
@@ -95,33 +116,12 @@
 	    /*$('#repartir').click(function() {
 	    	getHand(function(hand) {
 		        
-		        
-
-		        //Validar mano
-
-		        var resp = onePair(hand);
-		        if (resp) {
-		        	console.log("Par");
-		        } else {
-		        	console.log("No hay par");
-		        }
-
-		        hand='[{"number":"2","suit":"hearts"},{"number":"J","suit":"clubs"},{"number":"5","suit":"spades"},{"number":"5","suit":"hearts"},{"number":"2","suit":"spades"}]';
 		        console.log(hand);
 
-		        var resp2 = twoPair(hand);
-		        if (resp2) {
-		        	console.log("Dos pares");
-		        } else {
-		        	console.log("No hay dos pares");
-		        }
+		        populateTable(hand);
 
-		        var resp3 = threeOfAKind(hand);
-		        if (resp3) {
-		        	console.log("Trío");
-		        } else {
-		        	console.log("No hay trío");
-		        }
+		        var ranking = validateHand(hand);
+		        console.log(ranking);
 		        
 		        
 		    });
@@ -131,38 +131,26 @@
 	    $('#repartir').click(function() {
 	    	//Validar mano
 
-		        /*var resp = onePair(hand);
-		        if (resp) {
-		        	console.log("Par");
-		        } else {
-		        	console.log("No hay par");
-		        }*/
-
-		        var shand='[{"number":"2","suit":"hearts"},{"number":"4","suit":"clubs"},{"number":"3","suit":"spades"},{"number":"5","suit":"hearts"},{"number":"6","suit":"spades"}]';
+		        var shand1='[{"number":"2","suit":"clubs"},{"number":"2","suit":"hearts"},{"number":"3","suit":"hearts"},{"number":"3","suit":"spades"},{"number":"3","suit":"clubs"}]';
+		        var shand2='[{"number":"2","suit":"clubs"},{"number":"2","suit":"hearts"},{"number":"3","suit":"hearts"},{"number":"3","suit":"spades"},{"number":"3","suit":"clubs"}]';
 		        
-		        var hand = JSON.parse(shand);
-		        console.log(hand);
+		        var hand1 = JSON.parse(shand1);
+		        console.log(hand1);
 
-		        var resp2 = twoPair(hand);
-		        if (resp2) {
-		        	console.log("Dos pares");
-		        } else {
-		        	console.log("No hay dos pares");
-		        }
+		        var hand2 = JSON.parse(shand2);
+		        console.log(hand2);
 
-		        var resp3 = threeOfAKind(hand);
-		        if (resp3) {
-		        	console.log("Trío");
-		        } else {
-		        	console.log("No hay trío");
-		        }
+		        populateTable(hand1, "player1");
+		        populateTable(hand1, "player2");
 
-		        var resp4 = straight(hand);
-		        if (resp4) {
-		        	console.log("Escalera");
-		        } else {
-		        	console.log("No hay escalera");
-		        }
+		        var ranking1 = validateHand(hand1);
+		        console.log(ranking1);
+
+		        var ranking2 = validateHand(hand2);
+		        console.log(ranking2);
+
+		        handWins(ranking1, ranking2);
+
 	        return false;
 	    });
 	    
@@ -197,37 +185,13 @@
 	    });
 	}
 
-	/*$(function() {
-	    $('#repartir').click(function() {
-	    	getToken(function(hand) {
-		        //processing the data
-		        console.log(hand);
-		        
-		    });
-
-	        return false;
-	    });
-	});
-
-	function getToken(callback) {
-	    var data;
-	    $.ajax({
-	    	type : 'POST',
-	        url: 'https://services.comparaonline.com/dealer/deck',
-	        success: function (token) {
-	            console.log(token);
-	            $.ajax({
-			        type : 'GET',
-			        url  : 'https://services.comparaonline.com/dealer/deck/' + token + '/deal/5',
-			        success: function (resp) {
-			        	data = resp;
-			        	callback(data);
-			        }
-			    });
-	        },
-	        error: function () {}
-	    }); 
-	}*/
+	function populateTable(data, nameTable) {
+		$('#'+nameTable+' tr').not(':first').not(':last').remove();
+		var html = '';
+		for(var i = 0; i < data.length; i++)
+		            html += '<tr><td>' + data[i].number + '-' + data[i].suit + '</td><td>';
+		$('#'+nameTable+' tr').first().after(html);
+	}
 
 	function pokerHand(){
 		var ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
@@ -235,9 +199,50 @@
 	}
 
 	// Mano ganadora
-	function handWins(hand1, hand2) {
+	function handWins(valueHand1, valueHand2) {
+		if (valueHand1 > valueHand2) {
+			console.log("Hand 1 wins");
+		} else if (valueHand1 < valueHand2) {
+			console.log("Hand 1 wins");
+		} else {
+			// validar High card
+			console.log("It's a tie");
+		}
+	}
 
+	function validateHand(hand) {
+		var valueHand = 0;
+		if (highCard(hand)){
+			valueHand = 0;
+		}
 
+		if (fourOfAKind(hand)){
+			valueHand = 7;
+		} else if (threeOfAKind(hand)){
+			valueHand = 3;
+		} else if (twoPair(hand)) {
+			valueHand = 2;
+		} else if (onePair(hand)) {
+			valueHand = 1;
+		}
+
+		if (straight(hand)){
+			valueHand = 4;
+		}
+		if (flush(hand)){
+			valueHand = 5;
+		}
+		if (fullHouse(hand)){
+			valueHand = 6;
+		}
+		
+		if (straightFlush(hand)){
+			valueHand = 8;
+		}
+		if (royalFlush(hand)){
+			valueHand = 9;
+		}
+		return valueHand;
 	}
 
 	function highCard(hand) {
@@ -254,9 +259,13 @@
 		    for (var j = i+1; j < hand.length; j++) {
 		    	card = hand[j];
 		    	
-		    	if (cardTemp.number == card.number) {
+		    	if (cardTemp.number == card.number) {		    		
 		    		result = "One pair: " + card.number + "-" + card.suit + " / " + cardTemp.number + "-" + cardTemp.suit;
 		    		console.log("result: " + result);
+
+		    		// set number for validate result full house
+		    		fullOnePair = card.number;
+
 		    		return true;
 		    	}
 		    }
@@ -308,7 +317,10 @@
 		    		cont = cont + 1;
 		    		result = result + card.number + "-" + card.suit + "; ";
 
-		    		if (cont == 2) {
+		    		if (cont == 2) {		
+		    			// set number for validate result full house
+		    			fullThreeOfAKind = card.number;   
+
 						console.log(result);
 						return true;
 					}		    		
@@ -320,7 +332,6 @@
 
 	function straight(hand) {
 		var lowest = getLowest(hand);
-	    console.log("lowest: "+lowest);
 	    var handStraight = getHandStraight(hand);
 
 	     for(var i = 1; i < 5; i++){
@@ -329,6 +340,61 @@
 	          }     
 	     }
 	     return true;
+	}
+
+	function flush(hand) {
+		for(var i = 0; i < hand.length - 1; i ++){
+			if(hand[i].suit != hand[i+1].suit){
+            	return false;
+            }
+        }
+        return true;
+	}
+
+	function fullHouse(hand) {
+		if (fullOnePair && fullThreeOfAKind) {
+			if (fullOnePair != fullThreeOfAKind)
+			return true;
+		}
+		return false;
+	}
+
+	function fourOfAKind(hand) {
+		var card;
+		var cont = 0;
+		var result = "";		
+
+		for(var i = 0; i < hand.length; i++) {
+		    var cardTemp = hand[i];
+		    result = "Four of a Kind: " + cardTemp.number + "-" + cardTemp.suit + "; ";
+		    cont = 0;
+
+		    for (var j = i+1; j < hand.length; j++) {
+		    	card = hand[j];
+		    	
+		    	if (cardTemp.number == card.number) {
+		    		cont = cont + 1;
+		    		result = result + card.number + "-" + card.suit + "; ";
+
+		    		if (cont == 3) {
+						console.log(result);
+						return true;
+					}		    		
+		    	}
+		    }
+		}
+        return false;
+	}
+
+	function straightFlush(hand) {
+		if (flush(hand) && straight(hand)) {
+			return true;
+		}
+		return false;
+	}
+
+	function royalFlush(hand) {
+
 	}
 
 	// Obtener el menor número de la escalera
@@ -345,8 +411,7 @@
 	     var count = 0;
 	     var index = 0;   
 	     do{          
-	          index = hand.indexOf(n, index) + 1;  
-	          console.log('index: ' + index);
+	          index = hand.indexOf(n, index) + 1;
 	          if(index == 0){
 	               break;
 	          }
@@ -360,32 +425,21 @@
 	// Obtener array números de la mano
 	function getHandStraight(hand){
 		var arrayHand = [];
-	     for(var i = 0; i < 5; i ++){
+	     for(var i = 0; i < hand.length; i ++){
 	          arrayHand[i] = hand[i].number % 13;
 	          //suitsArray[i] = Math.floor(hand[i] / 13);     
 	     }
-	     console.log(arrayHand);
 	     return arrayHand;
 	}
 
-	function flush(hand) {
+	// set array de resultados
+	function setResult(text, number, suit="") {
+		var result = [3];
+		result[0] = text;
+		result[1] = number;
+		result[2] = suit;
 
-	}
-
-	function fullHouse(hand) {
-
-	}
-
-	function fourOfAKind(hand) {
-
-	}
-
-	function straightFlush(hand) {
-
-	}
-
-	function royalFlush(hand) {
-
+		return result;
 	}
 </script>
 </body>
