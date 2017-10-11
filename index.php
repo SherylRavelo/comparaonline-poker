@@ -31,33 +31,6 @@
 
 			<input type="hidden" name="token" id="token">
 
-			<!--<table id="player1" class="table">
-				<thead>
-					<tr>
-						<th>Jugador 1</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td></td>
-						<td></td>
-					</tr>
-				</tbody>
-			</table>
-
-			<table id="player2" class="table">
-				<thead>
-					<tr>
-						<th>Jugador 2</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td></td>
-					</tr>
-				</tbody>
-			</table>-->
-
 			<table id="players" class="table">
 				<thead>
 					<tr>
@@ -87,7 +60,9 @@
 				</tbody>
 			</table>
 
-
+			<p>
+				<label id="result" style="color:#f39"></label>
+			</p>
 			
 		</div>
 		
@@ -113,35 +88,54 @@
 	        return false;
 	    });
 
-	    /*$('#repartir').click(function() {
-	    	getHand(function(hand) {
+	    $('#repartir').click(function() {
+	    	getHand(function(data) {
 		        
-		        console.log(hand);
+		        console.log(data);
 
-		        populateTable(hand);
+		        var hand1 = data.slice(0, 5);
+		        var hand2 = data.slice(5, 10);
+		        console.log(hand1);
+		        console.log(hand2);
 
-		        var ranking = validateHand(hand);
-		        console.log(ranking);
+		        // Mostrar manos de poker a cada jugador
+		        populateTable(hand1, "player1");
+		        populateTable(hand2, "player2");
+
+		        var ranking1 = validateHand(hand1);
+		        console.log(ranking1);
+
+		        var ranking2 = validateHand(hand2);
+		        console.log(ranking2);
+
+		        handWins(ranking1, ranking2);
 		        
 		        
 		    });
 	        return false;
-	    });*/
+	    });
 
+	    /*
 	    $('#repartir').click(function() {
 	    	//Validar mano
 
-		        var shand1='[{"number":"2","suit":"clubs"},{"number":"2","suit":"hearts"},{"number":"3","suit":"hearts"},{"number":"3","suit":"spades"},{"number":"3","suit":"clubs"}]';
-		        var shand2='[{"number":"2","suit":"clubs"},{"number":"2","suit":"hearts"},{"number":"3","suit":"hearts"},{"number":"3","suit":"spades"},{"number":"3","suit":"clubs"}]';
+		        //var shand1='[{"number":"2","suit":"clubs"},{"number":"2","suit":"hearts"},{"number":"3","suit":"hearts"},{"number":"3","suit":"spades"},{"number":"3","suit":"clubs"}]';
+		        //var shand2='[{"number":"2","suit":"clubs"},{"number":"2","suit":"hearts"},{"number":"3","suit":"hearts"},{"number":"3","suit":"spades"},{"number":"3","suit":"clubs"}]';
+		        var sdata = '[{"number":"A","suit":"spades"},{"number":"9","suit":"spades"},{"number":"10","suit":"hearts"},{"number":"Q","suit":"hearts"},{"number":"3","suit":"diamonds"},{"number":"10","suit":"spades"},{"number":"A","suit":"diamonds"},{"number":"A","suit":"clubs"},{"number":"4","suit":"clubs"},{"number":"8","suit":"spades"}]';
 		        
-		        var hand1 = JSON.parse(shand1);
-		        console.log(hand1);
+		        var data = JSON.parse(sdata);
+		        console.log(data);
 
-		        var hand2 = JSON.parse(shand2);
+		        //var hand2 = JSON.parse(shand2);
+		        //console.log(hand2);
+
+		        var hand1 = data.slice(0, 5);
+		        var hand2 = data.slice(5, 10);
+		        console.log(hand1);
 		        console.log(hand2);
 
 		        populateTable(hand1, "player1");
-		        populateTable(hand1, "player2");
+		        populateTable(hand2, "player2");
 
 		        var ranking1 = validateHand(hand1);
 		        console.log(ranking1);
@@ -152,7 +146,7 @@
 		        handWins(ranking1, ranking2);
 
 	        return false;
-	    });
+	    });*/
 	    
 	});
 
@@ -161,11 +155,19 @@
 		$.ajax({
 	    	type : 'POST',
 	        url: 'https://services.comparaonline.com/dealer/deck',
+	        statusCode: {
+	        	500: function() {
+	        		alert("Ha ocurrido un error de comunicación, por favor vuelva a intentarlo.");
+	        	},
+	        	502: function() {
+	        		alert("El servidor puede estar saturado, por favor vuelva a intentarlo.");
+	        	}
+	        },
 	        success: function (token) {
 	            callback(token);
 	        },
 	        error: function (resp) {
-	        	alert("Intente de nuevo");
+	        	//alert("Intente de nuevo");
 	        }
 	    });
 	}
@@ -175,17 +177,33 @@
 		var token = $("#token").val();
 		$.ajax({
 	    	type : 'GET',
-	        url: 'https://services.comparaonline.com/dealer/deck/' + token + '/deal/5',
+	        url: 'https://services.comparaonline.com/dealer/deck/' + token + '/deal/10',
+	        statusCode: {
+	        	500: function() {
+	        		alert("Ha ocurrido un error de comunicación, por favor vuelva a intentarlo.");
+	        	},
+	        	502: function() {
+	        		alert("El servidor puede estar saturado, por favor vuelva a intentarlo.");
+	        	},
+	        	404: function() {
+	        		alert("Ups! Necesitas barajar el mazo.");
+	        	}
+	        },
 	        success: function (hand) {
 	            callback(hand);
 	        },
 	        error: function (resp) {
-	        	alert("Intente de nuevo");
+	        	//alert("Intente de nuevo");
+	        	//console.log(resp);
+	        	if (resp.status == 0) {
+	        		alert('El servidor puede estar saturado, por favor vuelva a intentarlo.');
+	        	}
 	        }
 	    });
 	}
 
 	function populateTable(data, nameTable) {
+		$('#'+nameTable+' tr').empty();
 		$('#'+nameTable+' tr').not(':first').not(':last').remove();
 		var html = '';
 		for(var i = 0; i < data.length; i++)
@@ -193,21 +211,89 @@
 		$('#'+nameTable+' tr').first().after(html);
 	}
 
-	function pokerHand(){
+	/*function pokerHand(){
 		var ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 		var suits = ['hearts', 'diamonds', 'clubs', 'spades'];
-	}
+	}*/
 
 	// Mano ganadora
 	function handWins(valueHand1, valueHand2) {
+		var result = "";
 		if (valueHand1 > valueHand2) {
 			console.log("Hand 1 wins");
+			console.log(valueHand1);
+			switch(valueHand1){
+				case 1:
+				result = "Jugador 1 gana con 'One Pair'";
+				break;
+				case 2:
+				result = "Jugador 1 gana con 'Two Pairs'";
+				break;
+				case 3:
+				result = "Jugador 1 gana con 'Three of a Kind'";
+				break;
+				case 4:
+				result = "Jugador 1 gana con 'Straight'";
+				break;
+				case 5:
+				result = "Jugador 1 gana con 'Flush'";
+				break;
+				case 6:
+				result = "Jugador 1 gana con 'Full House'";
+				break;
+				case 7:
+				result = "Jugador 1 gana con 'Four of a Kind'";
+				break;
+				case 8:
+				result = "Jugador 1 gana con 'Straight Flush'";
+				break;
+				case 9:
+				result = "Jugador 1 gana con 'Royal Flush'";
+				break;
+				/*default:
+        			console.log("Something went horribly wrong...");*/
+			}
+			console.log(result);
+			$("#result").text(result);
 		} else if (valueHand1 < valueHand2) {
-			console.log("Hand 1 wins");
+			console.log("Hand 2 wins");
+			switch(valueHand2){
+				case 1:
+				result = "Jugador 2 gana con 'One Pair'";
+				break;
+				case 2:
+				result = "Jugador 2 gana con 'Two Pairs'";
+				break;
+				case 3:
+				result = "Jugador 2 gana con 'Three of a Kind'";
+				break;
+				case 4:
+				result = "Jugador 2 gana con 'Straight'";
+				break;
+				case 5:
+				result = "Jugador 2 gana con 'Flush'";
+				break;
+				case 6:
+				result = "Jugador 2 gana con 'Full House'";
+				break;
+				case 7:
+				result = "Jugador 2 gana con 'Four of a Kind'";
+				break;
+				case 8:
+				result = "Jugador 2 gana con 'Straight Flush'";
+				break;
+				case 9:
+				result = "Jugador 2 gana con 'Royal Flush'";
+				break;
+			}
+			console.log(result);
+			$("#result").text(result);
 		} else {
 			// validar High card
 			console.log("It's a tie");
-		}
+			//alert("ES UN EMPATE");
+			$("#result").text("Es un empate");
+		}		
 	}
 
 	function validateHand(hand) {
