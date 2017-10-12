@@ -1,5 +1,9 @@
 # comparaonline-poker
 Contain test by Compara Online second exercise: poker
 
-#Install apache (Xampp 1.7.1)
-https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/1.7.1/xampp-win32-1.7.1.zip/download
+#Run Poker
+To run the poker game you only need to run the index.html
+
+#Version 
+jQuery jquery-2.1.4.js
+Bootstrap 3

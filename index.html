@@ -1,10 +1,8 @@
-<?php
-/**
- * @copyright     Copyright (c) Sheryl Ravelo
- * @link          https://github.com/SherylRavelo/comparaonline-poker.git
- */
+<!--
+ 	@copyright     Copyright (c) Sheryl Ravelo
+ 	@link          https://github.com/SherylRavelo/comparaonline-poker.git
+-->
 
-?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -24,6 +22,7 @@
 		<div class="content">
 			<p>
 				<input type="button" class="btn btn-lg" id="barajar" value="Barajar">
+				<label id="tokenOk" style="color:#f39"></label>
 			</p>
 			<p>
 				<input type="button" class="btn btn-lg" id="repartir" value="Repartir">
@@ -83,6 +82,7 @@
 	    	getDeck(function(token) {
 		        // set token en hidden
 		        $("#token").val(token);
+		        $("#tokenOk").text("Listo!");
 		        console.log(token);		        
 		    });
 	        return false;
@@ -102,26 +102,19 @@
 		        populateTable(hand1, "player1");
 		        populateTable(hand2, "player2");
 
-		        var ranking1 = validateHand(hand1);
-		        console.log(ranking1);
-
-		        var ranking2 = validateHand(hand2);
-		        console.log(ranking2);
-
-		        handWins(ranking1, ranking2);
-		        
+		        handWins(hand1, hand2);
 		        
 		    });
 	        return false;
 	    });
 
-	    /*
-	    $('#repartir').click(function() {
+	    
+	    /*$('#repartir').click(function() {
 	    	//Validar mano
 
 		        //var shand1='[{"number":"2","suit":"clubs"},{"number":"2","suit":"hearts"},{"number":"3","suit":"hearts"},{"number":"3","suit":"spades"},{"number":"3","suit":"clubs"}]';
 		        //var shand2='[{"number":"2","suit":"clubs"},{"number":"2","suit":"hearts"},{"number":"3","suit":"hearts"},{"number":"3","suit":"spades"},{"number":"3","suit":"clubs"}]';
-		        var sdata = '[{"number":"A","suit":"spades"},{"number":"9","suit":"spades"},{"number":"10","suit":"hearts"},{"number":"Q","suit":"hearts"},{"number":"3","suit":"diamonds"},{"number":"10","suit":"spades"},{"number":"A","suit":"diamonds"},{"number":"A","suit":"clubs"},{"number":"4","suit":"clubs"},{"number":"8","suit":"spades"}]';
+		        var sdata = '[{"number":"J","suit":"spades"},{"number":"Q","suit":"spades"},{"number":"K","suit":"hearts"},{"number":"10","suit":"hearts"},{"number":"A","suit":"diamonds"},{"number":"10","suit":"spades"},{"number":"A","suit":"diamonds"},{"number":"A","suit":"clubs"},{"number":"4","suit":"clubs"},{"number":"8","suit":"spades"}]';
 		        
 		        var data = JSON.parse(sdata);
 		        console.log(data);
@@ -137,13 +130,7 @@
 		        populateTable(hand1, "player1");
 		        populateTable(hand2, "player2");
 
-		        var ranking1 = validateHand(hand1);
-		        console.log(ranking1);
-
-		        var ranking2 = validateHand(hand2);
-		        console.log(ranking2);
-
-		        handWins(ranking1, ranking2);
+		        handWins(hand1, hand2);
 
 	        return false;
 	    });*/
@@ -187,6 +174,9 @@
 	        	},
 	        	404: function() {
 	        		alert("Ups! Necesitas barajar el mazo.");
+	        	},
+	        	405: function() {
+	        		alert("Ups! Ya no hay cartas en el mazo. Necesitas barajar el mazo.");
 	        	}
 	        },
 	        success: function (hand) {
@@ -217,11 +207,14 @@
 	}*/
 
 	// Mano ganadora
-	function handWins(valueHand1, valueHand2) {
+	function handWins(hand1, hand2) {
+		var valueHand1 = validateHand(hand1);
+		
+		var valueHand2 = validateHand(hand2);
+		
 		var result = "";
 		if (valueHand1 > valueHand2) {
-			console.log("Hand 1 wins");
-			console.log(valueHand1);
+			
 			switch(valueHand1){
 				case 1:
 				result = "Jugador 1 gana con 'One Pair'";
@@ -253,10 +246,10 @@
 				/*default:
         			console.log("Something went horribly wrong...");*/
 			}
-			console.log(result);
+			
 			$("#result").text(result);
 		} else if (valueHand1 < valueHand2) {
-			console.log("Hand 2 wins");
+			
 			switch(valueHand2){
 				case 1:
 				result = "Jugador 2 gana con 'One Pair'";
@@ -286,22 +279,30 @@
 				result = "Jugador 2 gana con 'Royal Flush'";
 				break;
 			}
-			console.log(result);
+			
 			$("#result").text(result);
 		} else {
 			// validar High card
-			console.log("It's a tie");
-			//alert("ES UN EMPATE");
-			$("#result").text("Es un empate");
-		}		
+			var highestPlayer1 = getHighest(hand1);
+			var highestPlayer2 = getHighest(hand2);
+
+			console.log(highestPlayer1);
+			console.log(highestPlayer2);
+
+			if (highestPlayer1 > highestPlayer2) {
+				result = "Jugador 1 gana con la carta más alta: " + wordOfCard(highestPlayer1);
+			} else if (highestPlayer1 < highestPlayer2) {
+				result = "Jugador 2 gana con la carta más alta: " + wordOfCard(highestPlayer2);
+			} else {	
+				result ="Es un empate. ";
+			}
+			$("#result").text(result);			
+		}
 	}
 
 	function validateHand(hand) {
 		var valueHand = 0;
-		if (highCard(hand)){
-			valueHand = 0;
-		}
-
+		
 		if (fourOfAKind(hand)){
 			valueHand = 7;
 		} else if (threeOfAKind(hand)){
@@ -331,9 +332,9 @@
 		return valueHand;
 	}
 
-	function highCard(hand) {
+	/*function highCard(hand) {
 
-	}
+	}*/
 
 	function onePair(hand) {
 		var card;
@@ -417,12 +418,16 @@
 	}
 
 	function straight(hand) {
-		var lowest = getLowest(hand);
-	    var handStraight = getHandStraight(hand);
-
+		var lowest = getLowest(hand);		
+		var straightHight = true;
+		if (lowest == 2) {
+			straightHight = false;
+		}
+	    var handStraight = getHandStraight(hand, straightHight);
+	    
 	     for(var i = 1; i < 5; i++){
 	          if(occurrencesOf(lowest + i, handStraight) != 1){
-	               return false
+	               return false;
 	          }     
 	     }
 	     return true;
@@ -483,50 +488,118 @@
 
 	}
 
-	// Obtener el menor número de la escalera
+	// Obtener el menor número de la mano
 	function getLowest(hand){
-	     var min = 12;
-	     for(var i = 0; i < hand.length; i++){
-	          min = Math.min(min, hand[i].number);     
+		var min = 12;
+
+		for(var i = 0; i < hand.length; i++){
+			min = Math.min(min, numberOfCard(hand[i].number));     
+		}
+	     // Validate Ace
+	     if (getHighest(hand) == 14 && min == 2) {
+	     	min = 1;
 	     }
 	     return min;     
+	 } 
+
+	// Obtener el número mayor de la mano
+	function getHighest(hand){
+		var max = 2;
+
+		for(var i = 0; i < hand.length; i++){
+
+			max = Math.max(max, numberOfCard(hand[i].number)); 
+
+		}
+		return max;     
 	} 
 
 	// Verificar que existe ocurrencia
 	function occurrencesOf(n, hand){
-	     var count = 0;
-	     var index = 0;   
-	     do{          
-	          index = hand.indexOf(n, index) + 1;
-	          if(index == 0){
-	               break;
-	          }
-	          else{
-	               count ++;
-	          }
-	     } while(index < hand.length);
-	     return count;
+		var count = 0;
+		var index = 0;   
+		do{          
+			index = hand.indexOf(n, index) + 1;
+			if(index == 0){
+				break;
+			}
+			else{
+				count ++;
+			}
+		} while(index < hand.length);
+		return count;
 	}
 
 	// Obtener array números de la mano
-	function getHandStraight(hand){
+	function getHandStraight(hand, straightHight){
 		var arrayHand = [];
 	     for(var i = 0; i < hand.length; i ++){
-	          arrayHand[i] = hand[i].number % 13;
+	     	if (straightHight) {
+	     		arrayHand[i] = numberOfCard(hand[i].number) % 15;
+	     	} else {
+	     		if (numberOfCard(hand[i].number) % 14 == 0) {
+	     			arrayHand[i] = 1;
+	     		} else {
+	     			arrayHand[i] = numberOfCard(hand[i].number) % 14;
+	     		}	     		
+	     	}
+	          
 	          //suitsArray[i] = Math.floor(hand[i] / 13);     
 	     }
 	     return arrayHand;
 	}
 
+	function numberOfCard(number) {
+		switch(number){
+			case "J":
+				return "11";
+				break
+			case "Q":
+				return "12";
+				break;
+			case "K":
+				return "13";
+				break;
+			case "A":
+				return "14";
+				break;
+			default:
+				return number;
+		}
+
+		return number;
+	}
+
+	function wordOfCard(number) {
+		switch(number){
+			case 11:
+				return "J";
+				break
+			case 12:
+				return "Q";
+				break;
+			case 13:
+				return "K";
+				break;
+			case 14:
+				return "A";
+				break;
+			default:
+				return number;
+		}
+
+		return number;
+	}
+
 	// set array de resultados
-	function setResult(text, number, suit="") {
+	/*function setResult(text, number, suit="") {
 		var result = [3];
 		result[0] = text;
 		result[1] = number;
 		result[2] = suit;
 
 		return result;
-	}
+	}*/
 </script>
 </body>
 </html>
